@@ -8,7 +8,7 @@ PATH = os.getcwd()
 current_file_path = os.path.dirname(os.path.realpath(__file__))
 
 
-def hosts_cnd(list_type, hostid):
+def hosts_cnd(list_type, hostid, ENV, ARGS):
     try:
         r = requests.get(ENV + list_type + '/' + hostid + '?', params=ARGS)
         res = r.json()
@@ -17,7 +17,7 @@ def hosts_cnd(list_type, hostid):
     except ssl.SSLError:
         print("SSL Error")
 
-def process_restart(list_type):
+def process_restart(list_type, ENV, ARGS):
     try:
         r = requests.get(ENV + list_type + '?', params=ARGS)
         res = r.json()
@@ -40,7 +40,7 @@ def process_restart(list_type):
                     with open ( time.strftime("%y_%m_%d_") + "process_bchile_restart.csv", "a", newline="") as f2:
                         writer = csv.writer(f2)
                         idHost = res[key]['fromRelationships']['isProcessOf']
-                        servidor = hosts_cnd('hosts', idHost[0])
+                        servidor = hosts_cnd('hosts', idHost[0], ENV, ARGS)
                         print (oneAgentVersion)
                         writer.writerow([key, servidor, res[key]['entityId'], res[key]['displayName'], res[key]['monitoringState']['restartRequired'], oneAgentVersion, softwareTechnologies, listenPorts])
 
@@ -55,4 +55,5 @@ if __name__ == "__main__":
         config = json.load(f)
         ENV = config["dynatrace_base_url"]
         TOKEN = config["dynatrace_token"]
-    process_restart('processes')
+        ARGS = {'Api-Token':TOKEN} 
+    process_restart('processes', ENV, ARGS)
